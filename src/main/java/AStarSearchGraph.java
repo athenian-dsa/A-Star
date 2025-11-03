@@ -10,169 +10,6 @@ public class AStarSearchGraph {
         vertices = new HashMap<>();
     }
 
-    // Adds a vertex to the graph
-    public void addVertex(String label, int x, int y) {
-        // Check vertex doesn't already exist before adding it
-        if (!vertices.containsKey(label)) {
-            GridVertex v1 = new GridVertex(label, x, y);
-            vertices.put(label, v1);
-        }
-    }
-
-    // Adds an edge to the graph
-    public void addEdge(String label1, String label2, int weight) {
-        // Check vertices exist before adding an edge between them
-        if (vertices.containsKey(label1) && vertices.containsKey(label2)) {
-            GridVertex v1 = vertices.get(label1);
-            GridVertex v2 = vertices.get(label2);
-
-            v1.edges.add(new WeightedEdge(v1, v2, weight));
-            v2.edges.add(new WeightedEdge(v2, v1, weight));
-        }
-    }
-
-    // Removes a vertex from the graph
-    public void removeVertex(String label) {
-        // Check vertex exists before removing it
-        if (vertices.containsKey(label)) {
-            GridVertex v1 = vertices.get(label);
-
-            // Remove all edges to this vertex
-            for (WeightedEdge edge1: v1.edges) {
-                GridVertex v2 = edge1.destination;
-
-                // Look through v2 edges for edge to this
-                for (WeightedEdge edge2: v2.edges) {
-                    if (edge2.destination.equals(v1)) {
-                        v2.edges.remove(edge2);
-                    }
-                }
-            }
-
-            v1.edges.clear();
-            vertices.remove(label);
-        }
-    }
-
-    // Removes an edge from the graph
-    public void removeEdge(String label1, String label2) {
-        // Check vertices exist before removing an edge between them
-        if (vertices.containsKey(label1) && vertices.containsKey(label2)) {
-            GridVertex v1 = vertices.get(label1);
-            GridVertex v2 = vertices.get(label2);
-
-            for (WeightedEdge edge1: v1.edges) {
-                if (edge1.destination.equals(v2)) {
-                    v1.edges.remove(edge1);
-                }
-            }
-
-            for (WeightedEdge edge2: v2.edges) {
-                if (edge2.destination.equals(v1)) {
-                    v2.edges.remove(edge2);
-                }
-            }
-
-        }
-    }
-
-    // Priority Queue Check
-    // Given a priority queue and a label, checks to see
-    // if a PQNode with that label shows is present in the queue
-    public boolean queueContainsLabel(PriorityQueue<PQNode> queue, String label) {
-        for (PQNode n : queue) {
-            if (n.label.equals(label)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Helper method that changes weight of a node in the queue by removing old node and adding new node
-    public void changeWeight(PriorityQueue<PQNode> queue, String label, int newWeight) {
-        queue.removeIf(n -> n.label.equals(label));
-        queue.add(new PQNode(label, newWeight));
-    }
-
-    public int priorityQueueDijkstra(String source, String destination) {
-        // Create visitedAndDone hashSet
-        HashSet<String> visitedAndDone = new HashSet<>();
-
-        // Create priority queue and add source node
-        PriorityQueue<PQNode> queue = new PriorityQueue<>();
-        queue.add(new PQNode(source, 0));
-
-        // Create distances HashMap and add source to distance map
-        HashMap<String, Integer> distances = new HashMap<>();
-        distances.put(source, 0);
-
-        // Do Dijkstra's algorithm
-        while (!queue.isEmpty()) {
-            // Find minimum distance vertex
-            PQNode minDistance = queue.poll();
-            String label1 = minDistance.label;
-            GridVertex v1 = vertices.get(label1);
-
-            // For debugging, let's print out the node we visit
-            System.out.println("Visiting " + label1);
-
-            // Return immediately if we have dequeued destination node
-            if (label1.equals(destination)) {
-                return distances.get(label1);
-            }
-
-            // Otherwise, continue on
-            // Add min vertex to visitedAndDone set
-            visitedAndDone.add(label1);
-
-            // Update distance of vertex neighbor; loop through all neighbors
-            for (WeightedEdge edge1: v1.edges) {
-                String neighborLabel = edge1.destination.label;
-
-            // If you don't like enhanced for loops, you could
-            // use the following instead:
-//            for (int i = 0; i < v1.edges.size(); i++) {
-//                WeightedEdge edge1 = v1.edges.get(i);
-//                String neighborLabel = edge1.destination.label;
-//                ...
-//                ...
-
-                // If neighbor has not been visited yet, we need to add
-                if (!visitedAndDone.contains(neighborLabel)) {
-                    // The new (possibly shorter) distance is the distance to label1
-                    // plus the weight of the edge between label1 and its neighbor
-                    int newDistance = distances.get(label1) + edge1.weight;
-
-                    // The old distance value is either infinity OR the current distance
-                    // value in the distances HashMap
-                    int oldDistance = Integer.MAX_VALUE;
-                    if (distances.containsKey(neighborLabel)) {
-                        oldDistance = distances.get(neighborLabel);
-                    }
-
-                    // If the new distance is shorter, we need to update both the map and
-                    // the priority queue
-                    if (newDistance < oldDistance) {
-                        distances.put(neighborLabel, newDistance);
-
-                        // If neighborLabel isn't in the queue yet, add it to the queue
-                        if (queueContainsLabel(queue, neighborLabel)) {
-                            queue.offer(new PQNode(neighborLabel, newDistance));
-                        }
-                        // if it already is in the priority queue, update its priority
-                        else {
-                            changeWeight(queue, neighborLabel, newDistance);
-                        }
-                    }
-                }
-            }
-            // For debugging, let's print out the distances map as we go
-            System.out.println(distances);
-        }
-
-        return -1;
-    }
-
     // Manhattan Distance Heuristic
     // Given the labels corresponding to two nodes
     // calculates the Manhattan Distance between the nodes
@@ -185,7 +22,7 @@ public class AStarSearchGraph {
     public int aStar(String source, String destination) {
         // YOUR CODE HERE
 
-        // You should copy and paste the priorityQueueDijkstra code here
+        // You should copy and paste your Dijkatra's implementation here
         // and then add/edit just a few lines of the code to modify it
         // to work as A* search
 
@@ -232,6 +69,28 @@ public class AStarSearchGraph {
             System.out.println();
         }
     }
+
+    // Adds a vertex to the graph
+    public void addVertex(String label, int x, int y) {
+        // Check vertex doesn't already exist before adding it
+        if (!vertices.containsKey(label)) {
+            GridVertex v1 = new GridVertex(label, x, y);
+            vertices.put(label, v1);
+        }
+    }
+
+    // Adds an edge to the graph
+    public void addEdge(String label1, String label2, int weight) {
+        // Check vertices exist before adding an edge between them
+        if (vertices.containsKey(label1) && vertices.containsKey(label2)) {
+            GridVertex v1 = vertices.get(label1);
+            GridVertex v2 = vertices.get(label2);
+
+            v1.edges.add(new WeightedEdge(v1, v2, weight));
+            v2.edges.add(new WeightedEdge(v2, v1, weight));
+        }
+    }
+
 
     public static void main(String[] args) {
 //        // --------------------------
